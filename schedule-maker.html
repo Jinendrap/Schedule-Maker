@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Schedule Maker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#f5f7fa; --surface:#ffffff; --ink:#172033; --muted:#5b667a; --line:#dde2ea; --line-strong:#c3cad6;
+  --accent:#2648d8; --accent-ink:#ffffff; --accent-soft:#e8edff;
+  --major:#2648d8; --major-bg:#e6ebff;
+  --minor:#0b7f73; --minor-bg:#dcf4f0;
+  --core:#a8560a; --core-bg:#fdecd3;
+  --other:#8a2f83; --other-bg:#f6e3f4;
+  --bad:#b42318; --bad-bg:#fde7e4; --ok:#166a3a; --ok-bg:#dff5e6; --warn-bg:#fff4d6; --warn:#7a5200;
+  --font:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --display:'Bricolage Grotesque','Figtree',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1420; --surface:#171e2e; --ink:#e8ecf5; --muted:#9aa5ba; --line:#2a3348; --line-strong:#3a4560;
+    --accent:#7d97ff; --accent-ink:#0c1226; --accent-soft:#1f2a52;
+    --major:#8ea4ff; --major-bg:#1e2850; --minor:#4fd1c0; --minor-bg:#0f3a35; --core:#f0a95a; --core-bg:#3d2810;
+    --other:#e59adf; --other-bg:#3a1c37; --bad:#ff8a7d; --bad-bg:#3d1a17; --ok:#6fdc9a; --ok-bg:#12341f; --warn-bg:#3a2e0d; --warn:#f2cc6b;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1420; --surface:#171e2e; --ink:#e8ecf5; --muted:#9aa5ba; --line:#2a3348; --line-strong:#3a4560;
+  --accent:#7d97ff; --accent-ink:#0c1226; --accent-soft:#1f2a52;
+  --major:#8ea4ff; --major-bg:#1e2850; --minor:#4fd1c0; --minor-bg:#0f3a35; --core:#f0a95a; --core-bg:#3d2810;
+  --other:#e59adf; --other-bg:#3a1c37; --bad:#ff8a7d; --bad-bg:#3d1a17; --ok:#6fdc9a; --ok-bg:#12341f; --warn-bg:#3a2e0d; --warn:#f2cc6b;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5}
+h1,h2,h3{font-family:var(--display);line-height:1.15;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+header.top{border-bottom:1px solid var(--line);background:var(--surface)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:60px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:800;font-size:20px;cursor:pointer;background:none;border:0;padding:0}
+.crumbs{display:flex;gap:6px;font-size:14px;color:var(--muted);flex-wrap:wrap}
+.crumbs span{padding:4px 10px;border-radius:999px}
+.crumbs .on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.crumbs .done{color:var(--ink)}
+main{padding:32px 0 64px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line-strong);background:var(--surface);border-radius:10px;padding:9px 16px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn.big{padding:14px 26px;font-size:17px;border-radius:12px}
+.btn.small{padding:5px 10px;font-size:14px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}
+.card+.card{margin-top:18px}
+.muted{color:var(--muted)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.spread{justify-content:space-between}
+/* landing */
+.hero{display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:center;padding:24px 0 8px}
+.hero h1{font-size:clamp(34px,5vw,54px);font-weight:800;letter-spacing:-.02em}
+.hero p.lead{font-size:18px;color:var(--muted);max-width:52ch;margin:18px 0 26px}
+.mini{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:14px}
+.mini .cap{font-size:13px;color:var(--muted);margin-bottom:8px}
+.mini-grid{display:grid;grid-template-columns:38px repeat(5,1fr);gap:4px;font-size:12px}
+.mini-grid div{min-height:32px;border-radius:6px;padding:3px 5px}
+.mini-grid .h{color:var(--muted);text-align:center;min-height:0}
+.mini-grid .t{color:var(--muted);padding:3px 0}
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+.steps3 .card{padding:18px}
+.steps3 h3{font-size:18px;margin-bottom:6px}
+@media(max-width:820px){.hero{grid-template-columns:1fr}.steps3{grid-template-columns:1fr}}
+/* upload */
+.drop{border:2px dashed var(--line-strong);border-radius:16px;padding:44px 20px;text-align:center;background:var(--surface);cursor:pointer}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop h2{font-size:26px;margin-bottom:6px}
+.status{margin-top:16px;padding:12px 14px;border-radius:10px;background:var(--accent-soft)}
+.status.ok{background:var(--ok-bg);color:var(--ok)}
+.status.err{background:var(--bad-bg);color:var(--bad)}
+.kv{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:var(--muted);margin-bottom:6px}
+details{border:1px solid var(--line);border-radius:12px;padding:12px 16px;background:var(--surface)}
+details+details{margin-top:12px}
+summary{cursor:pointer;font-weight:600}
+textarea{width:100%;min-height:120px;border:1px solid var(--line-strong);border-radius:10px;padding:10px;background:var(--bg);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
+/* tables */
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--surface)}
+th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-weight:600;background:var(--bg);white-space:nowrap;position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+td input,td select{width:100%;min-width:74px;border:1px solid transparent;background:transparent;border-radius:6px;padding:4px 6px}
+td input:hover,td select:hover{border-color:var(--line-strong)}
+td input:focus,td select:focus{border-color:var(--accent);background:var(--surface)}
+td.flag{font-size:12px;color:var(--warn);min-width:110px}
+tr.bad td.flag{color:var(--bad)}
+.field{display:flex;flex-direction:column;gap:6px;min-width:220px;flex:1}
+.field label{font-weight:600;font-size:14px}
+.field select,.field input{border:1px solid var(--line-strong);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill.Major{background:var(--major-bg);color:var(--major)}
+.pill.Minor{background:var(--minor-bg);color:var(--minor)}
+.pill.Core{background:var(--core-bg);color:var(--core)}
+.pill.Other{background:var(--other-bg);color:var(--other)}
+.notice{padding:10px 14px;border-radius:10px;background:var(--warn-bg);color:var(--warn);font-size:14px;margin-top:12px}
+.notice.bad{background:var(--bad-bg);color:var(--bad)}
+.notice.ok{background:var(--ok-bg);color:var(--ok)}
+/* results */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface)}
+.stat b{display:block;font-family:var(--display);font-size:28px}
+.stat.bad{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
+.tabs{display:inline-flex;border:1px solid var(--line-strong);border-radius:10px;overflow:hidden}
+.tabs button{border:0;background:var(--surface);padding:8px 16px;cursor:pointer}
+.tabs button.on{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.tt{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.tt-inner{min-width:640px}
+.tt-head,.tt-body{display:grid;grid-template-columns:54px repeat(var(--nd),1fr)}
+.tt-head div{padding:8px 6px;text-align:center;font-weight:600;border-bottom:1px solid var(--line);background:var(--bg)}
+.tt-gutter{position:relative}
+.tt-gutter span{position:absolute;right:6px;font-size:12px;color:var(--muted);transform:translateY(-8px)}
+.tt-col{position:relative;border-left:1px solid var(--line)}
+.tt-line{position:absolute;left:0;right:0;border-top:1px solid var(--line)}
+.blk{position:absolute;border-radius:8px;padding:4px 6px;font-size:12px;line-height:1.3;overflow:hidden;border-left:5px solid;background:var(--bg)}
+.blk b{display:block;font-size:13px}
+.blk.Major{background:var(--major-bg);border-color:var(--major);color:var(--ink)}
+.blk.Minor{background:var(--minor-bg);border-color:var(--minor);color:var(--ink);border-left-style:double;border-left-width:6px}
+.blk.Core{background:var(--core-bg);border-color:var(--core);color:var(--ink);border-left-style:dotted}
+.blk.Other{background:var(--other-bg);border-color:var(--other);color:var(--ink);border-left-style:dashed}
+.blk.ghost{opacity:.55;border:1px dashed var(--line-strong);border-left-width:5px;background:transparent}
+.blk.clash{outline:2px solid var(--bad);outline-offset:-2px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;margin:10px 0}
+.opt-table td:first-child{width:36px}
+.course-row td{background:var(--bg);font-weight:600}
+.combo{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px}
+.combo.free{border-color:var(--ok)}
+.combo ul{margin:6px 0 0;padding-left:18px;font-size:14px}
+.sel-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.sel-list ul{margin:6px 0 0;padding-left:18px}
+footer{color:var(--muted);font-size:13px;padding:20px 0}
+.sr{position:absolute;left:-9999px}
+.sched{table-layout:fixed;min-width:720px}.sched th{text-align:center;font-family:var(--display);font-size:16px}
+.sc{vertical-align:top;text-align:center;height:92px;border:1px solid var(--line);padding:8px 6px;background:var(--surface)}
+.sc.Major{background:var(--major-bg)}.sc.Minor{background:var(--minor-bg)}.sc.Core{background:var(--core-bg)}.sc.Other{background:var(--other-bg)}
+.sc.clash{outline:2px solid var(--bad);outline-offset:-2px}.sc-name{font-weight:600}.sc-time{margin:6px 0}.sc-meta{font-size:12px;color:var(--muted)}
+.lunch{text-align:center;background:var(--bg);color:var(--muted);font-weight:600;letter-spacing:.02em}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <button class="brand" data-act="home" aria-label="Schedule Maker home">Schedule Maker</button>
+  <nav class="crumbs" id="crumbs" aria-label="Progress"></nav>
+</div></header>
+<main><div class="wrap" id="app"></div></main>
+<div class="wrap"><footer>Your timetable is processed in this browser tab. Nothing is sent to a Schedule Maker server.</footer></div>
+
+<script>
+/*CORE_START*/
+'use strict';
+const DAY_NAMES=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const norm=s=>String(s==null?'':s).trim().toLowerCase().replace(/\s+/g,' ');
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- time + day parsing ---------- */
+function normDay(s){
+  const m=String(s==null?'':s).trim().match(/^(mon|tue|wed|thu|fri|sat|sun)[a-z]{0,6}\.?$/i);
+  return m?DAY_NAMES.find(d=>d.toLowerCase()===m[1].toLowerCase()):'';
+}
+function parseTimePart(s){
+  let t=String(s==null?'':s).trim().toLowerCase().replace(/([ap])\.m\.?/g,'$1m').replace(/(\d)\.(\d)/g,'$1:$2');
+  const m=t.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/);
+  if(!m) return null;
+  const h=+m[1], mi=m[2]?+m[2]:0;
+  if(h>24||mi>59) return null;
+  return {h,m:mi,ap:m[3]||''};
+}
+function hourToMin(p){
+  let h=p.h;
+  if(p.ap==='pm'&&h<12) h+=12;
+  else if(p.ap==='am'&&h===12) h=0;
+  else if(!p.ap&&h>=1&&h<8) h+=12; // college hours: bare 1-7 means afternoon
+  return h*60+p.m;
+}
+function resolveRange(a,b){
+  const s=hourToMin(a); let e=hourToMin(b);
+  if(e<=s&&!b.ap){const e2=e+720; if(e2>s&&e2<1440) e=e2;}
+  if(e<=s) return null;
+  return {start:s,end:e};
+}
+function parseRange(str){
+  const parts=String(str==null?'':str).trim().split(/\s*(?:-|–|—|\bto\b)\s*/i);
+  if(parts.length!==2) return null;
+  const a=parseTimePart(parts[0]), b=parseTimePart(parts[1]);
+  if(!a||!b) return null;
+  return resolveRange(a,b);
+}
+function parseCellTime(s){
+  const r=parseRange(s);
+  if(r) return {s:r.start,e:r.end};
+  const t=String(s==null?'':s).trim();
+  if(/[:.]|am|pm/i.test(t)){const p=parseTimePart(t); if(p) return {s:hourToMin(p),e:null};}
+  return null;
+}
+const fmt=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+function toMin(hhmm){
+  const m=String(hhmm||'').match(/^(\d{1,2}):(\d{2})$/);
+  return m?(+m[1])*60+(+m[2]):null;
+}
+function normCat(s){
+  const t=norm(s);
+  if(!t) return '';
+  if(/major/.test(t)) return 'Major';
+  if(/minor/.test(t)) return 'Minor';
+  if(/\bcore\b|compulsory|mandatory|common|foundation/.test(t)) return 'Core';
+  return String(s).trim();
+}
+const catClass=c=>['Major','Minor','Core'].includes(c)?c:'Other';
+
+/* ---------- table / grid detection ---------- */
+const FIELD_RULES=[
+ ['code',/code|course id|subject id|course no|subject no/],
+ ['start',/start|from|begin/],
+ ['end',/\bend\b|finish|until|^to$/],
+ ['room',/room|venue|hall|location/],
+ ['faculty',/faculty|teacher|instructor|professor|lecturer|staff/],
+ ['day',/^days?$|^day\b|weekday/],
+ ['option',/option|choice/],
+ ['batch',/batch|group/],
+ ['semester',/\bsem|term/],
+ ['division',/division|\bdiv\b|section|\bsec\b/],
+ ['category',/categor|type|kind|nature|track/],
+ ['specialisation',/special|stream|major|minor|program|branch|department|discipline/],
+ ['time',/time|slot|timing|period|hours?/],
+ ['course',/course|subject|paper|title|module|name/]
+];
+const FIELDS=FIELD_RULES.map(r=>r[0]);
+function matchHeader(h){
+  const t=norm(h).replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+  if(!t) return null;
+  for(const [f,re] of FIELD_RULES) if(re.test(t)) return f;
+  return null;
+}
+function detectTable(grid){
+  let best=null;
+  for(let r=0;r<Math.min(25,grid.length);r++){
+    const mapping={};
+    (grid[r]||[]).forEach((c,i)=>{const f=matchHeader(c); if(f&&mapping[f]==null) mapping[f]=i;});
+    const n=Object.keys(mapping).length;
+    if(mapping.course!=null&&(mapping.day!=null||mapping.time!=null||mapping.start!=null)&&n>=3){
+      if(!best||n>best.n) best={headerRow:r,mapping,n};
+    }
+  }
+  return best;
+}
+function transpose(g){
+  const w=Math.max(0,...g.map(r=>r.length)); const out=[];
+  for(let c=0;c<w;c++){out.push(g.map(r=>r[c]==null?'':r[c]));}
+  return out;
+}
+function detectGrid(grid){
+  const attempt=g=>{
+    const width=Math.max(0,...g.map(x=>x.length));
+    for(let r=0;r<Math.min(25,g.length);r++){
+      const dayCols=[]; const seen={};
+      (g[r]||[]).forEach((c,i)=>{const d=normDay(c); if(d&&!seen[d]){seen[d]=1; dayCols.push([i,d]);}});
+      if(dayCols.length>=2){
+        let best=-1,bc=0;
+        for(let c=0;c<width;c++){let n=0; for(let k=r+1;k<g.length;k++) if(parseCellTime((g[k]||[])[c])) n++; if(n>bc){bc=n;best=c;}}
+        if(bc>=2) return {headerRow:r,timeCol:best,dayCols};
+      }
+    }
+    return null;
+  };
+  let a=attempt(grid); if(a) return Object.assign({transposed:false},a);
+  a=attempt(transpose(grid)); if(a) return Object.assign({transposed:true},a);
+  return null;
+}
+
+/* ---------- "day blocks" layout: one block per day, classes as columns ---------- */
+function detectBlocks(grid){
+  const dayRows=[], hdrRows=[];
+  grid.forEach((row,r)=>{
+    const c0=String(row[0]||'').trim();
+    if(normDay(c0)){ if(row.slice(1).every(x=>!x||x===c0)) dayRows.push(r); }
+    else if(/^time$/i.test(c0)&&row.slice(1).filter(Boolean).length>=2) hdrRows.push(r);
+  });
+  return dayRows.length>=2&&hdrRows.length>=1?{dayRows,hdrRows}:null;
+}
+function extractInlineTime(t){
+  const m=t.match(/(\d{1,2}(?:[:.]\d{2})?\s*(?:am|pm)?)\s*(?:to|[-–—])\s*(\d{1,2}(?:[:.]\d{2})?\s*(?:am|pm)?)\s*$/i);
+  if(!m) return null;
+  const r=parseRange(m[1]+' to '+m[2]);
+  return r?{range:r,rest:t.slice(0,m.index).trim()}:null;
+}
+function splitSection(text){
+  const m=text.match(/^(.*\S)\s*[-–—]\s*([A-Z])$/);
+  return m?{base:m[1].trim(),section:m[2]}:{base:text.trim(),section:''};
+}
+function extractBlocks(src,cfg){
+  const g=src.grid, out=[], seen=new Set();
+  cfg.dayRows.forEach((dr,bi)=>{
+    const end=bi+1<cfg.dayRows.length?cfg.dayRows[bi+1]:g.length;
+    let h=cfg.hdrRows.find(x=>x>=dr&&x<end);
+    if(h==null){const before=cfg.hdrRows.filter(x=>x<dr); h=before.length?before[before.length-1]:null;}
+    if(h==null) return;
+    const day=normDay(g[dr][0]), classCols=[];
+    g[h].forEach((t,i)=>{if(i>0&&t) classCols.push([i,t.replace(/^class\s*[-–:]?\s*/i,'').trim()]);});
+    for(let r=Math.max(dr,h)+1;r<end;r++){
+      if(cfg.hdrRows.includes(r)) continue;
+      const row=g[r]||[], c0=String(row[0]||'').trim();
+      if(/lunch|break|recess/i.test(c0)) continue;
+      const label=c0?parseRange(c0):null;
+      classCols.forEach(([ci,cls])=>{
+        const t=String(row[ci]||'').trim();
+        if(!t||/^(lunch|break)/i.test(t)) return;
+        const tm=extractInlineTime(t), range=tm?tm.range:label, sp=splitSection(tm?tm.rest:t);
+        if(!sp.base) return;
+        const e=Object.assign(blankEntry(),{course:sp.base,option:sp.section,division:cls,day,
+          start:range?fmt(range.start):'',end:range?fmt(range.end):'',sheet:src.name});
+        const k=[e.day,e.division,e.course,e.option,e.start,e.end].join('|');
+        if(!seen.has(k)){seen.add(k); out.push(e);}
+      });
+    }
+  });
+  return out;
+}
+const disp=m=>(Math.floor(m/60)%12||12)+':'+String(m%60).padStart(2,'0');
+const dispName=s=>s.name+(s.section?' - '+s.section:'')+(s.cls?' ('+s.cls+')':'');
+function autoConfig(src){
+  const bl=detectBlocks(src.grid);
+  if(bl) return Object.assign({layout:'blocks',include:true,headerRow:0,mapping:{}},bl);
+  const t=detectTable(src.grid);
+  if(t) return {layout:'table',headerRow:t.headerRow,mapping:t.mapping,include:true};
+  const g=detectGrid(src.grid);
+  if(g) return Object.assign({layout:'grid',include:true,mapping:{}},g);
+  return {layout:'table',headerRow:0,mapping:{},include:src.grid.length>0,unrecognised:true};
+}
+
+/* ---------- extraction into normalized entries ---------- */
+function blankEntry(){return {course:'',code:'',category:'',specialisation:'',division:'',day:'',start:'',end:'',faculty:'',room:'',batch:'',semester:'',option:'',sheet:''};}
+
+function extractTable(src,cfg,opts){
+  const g=src.grid, m=cfg.mapping||{}, out=[], last={};
+  const FILL=['day','category','specialisation','division','semester'];
+  const courseHdr=m.course!=null?norm((g[cfg.headerRow]||[])[m.course]):'';
+  for(let r=cfg.headerRow+1;r<g.length;r++){
+    const row=g[r]||[]; const v={};
+    FIELDS.forEach(f=>{v[f]=m[f]!=null?String(row[m[f]]==null?'':row[m[f]]).trim():'';});
+    if(!v.course&&!v.code&&!v.day&&!v.time&&!v.start) continue;
+    if(courseHdr&&norm(v.course)===courseHdr) continue; // repeated header (page break)
+    if(opts.fillDown&&(v.course||v.code)){
+      FILL.forEach(f=>{ if(m[f]==null) return; if(v[f]==='') {if(last[f]) v[f]=last[f];} else last[f]=v[f]; });
+    } else {FILL.forEach(f=>{if(v[f]) last[f]=v[f];});}
+    if(!v.course&&!v.code) continue;
+    let start='',end='';
+    if(v.start&&v.end){
+      const a=parseTimePart(v.start), b=parseTimePart(v.end);
+      if(a&&b){const r2=resolveRange(a,b); if(r2){start=fmt(r2.start);end=fmt(r2.end);}}
+    } else if(v.time){
+      const r2=parseRange(v.time); if(r2){start=fmt(r2.start);end=fmt(r2.end);}
+    }
+    let days=v.day?v.day.split(/\s*(?:,|\/|&|\band\b)\s*/i).map(normDay).filter(Boolean):[];
+    if(!days.length) days=[''];
+    days.forEach(d=>{
+      const e=blankEntry();
+      Object.assign(e,{course:v.course,code:v.code,category:normCat(v.category),specialisation:v.specialisation,division:v.division,
+        day:d,start,end,faculty:v.faculty,room:v.room,batch:v.batch,semester:v.semester,option:v.option,sheet:src.name});
+      out.push(e);
+    });
+  }
+  return out;
+}
+
+function parseCell(text){
+  const t=String(text||'').trim();
+  const res={course:'',code:'',category:'',division:'',batch:'',faculty:'',room:''};
+  let m;
+  if((m=t.match(/\b([A-Z]{2,5}[- ]?\d{3,4}[A-Z]?)\b/))) res.code=m[1];
+  if((m=t.match(/\b(major|minor|core)\b/i))) res.category=normCat(m[1]);
+  if((m=t.match(/\b(?:div(?:ision)?|sec(?:tion)?)\.?\s*[:\-]?\s*([A-Z0-9]{1,3})\b/i))) res.division=m[1].toUpperCase();
+  if((m=t.match(/\bbatch\.?\s*[:\-]?\s*([A-Z0-9]{1,3})\b/i))) res.batch=m[1].toUpperCase();
+  let parts=t.split(/\n+/).flatMap(l=>l.split(/\s+[-|\/]\s+|\s*\|\s*/)).map(x=>x.trim()).filter(Boolean);
+  const clean=s=>s.replace(res.code||'\u0000','').replace(/\(?\b(major|minor|core)\b\)?/ig,'').replace(/\b(?:div(?:ision)?|sec(?:tion)?|batch)\.?\s*[:\-]?\s*[A-Z0-9]{1,3}\b/ig,'').replace(/[()\[\]]/g,' ').replace(/\s+/g,' ').trim();
+  res.course=clean(parts[0]||'')||res.code;
+  for(const p of parts.slice(1)){
+    if(/^(?:room|rm|lab|hall|class(?:room)?)\b/i.test(p)||/^[A-Z]{0,3}-?\d{2,4}[A-Z]?$/.test(p)){ if(!res.room) res.room=p; }
+    else if(/^(dr|prof|mr|mrs|ms)\b/i.test(p)){ if(!res.faculty) res.faculty=p; }
+    else if(!res.faculty&&!/^(?:div|sec|batch|major|minor|core)/i.test(p)) res.faculty=p;
+  }
+  return res;
+}
+const BREAK_RE=/^(break|lunch|recess|tea|interval|free|-+|—|–|x)$/i;
+function extractGrid(src,cfg,opts){
+  const g=cfg.transposed?transpose(src.grid):src.grid;
+  const rows=[];
+  for(let r=cfg.headerRow+1;r<g.length;r++){
+    const t=parseCellTime((g[r]||[])[cfg.timeCol]);
+    if(t) rows.push({r,s:t.s,e:t.e});
+  }
+  rows.forEach((x,i)=>{ if(x.e==null){const nx=rows[i+1]; x.e=nx&&nx.s>x.s?nx.s:x.s+60;} });
+  const out=[];
+  for(const [col,day] of cfg.dayCols){
+    let i=0;
+    while(i<rows.length){
+      const text=String((g[rows[i].r]||[])[col]||'').trim();
+      if(!text||BREAK_RE.test(text)){i++;continue;}
+      let j=i;
+      while(j+1<rows.length&&String((g[rows[j+1].r]||[])[col]||'').trim()===text&&rows[j+1].s<=rows[j].e) j++;
+      const p=parseCell(text), e=blankEntry();
+      Object.assign(e,{course:p.course,code:p.code,category:p.category,division:p.division,batch:p.batch,faculty:p.faculty,room:p.room,
+        day,start:fmt(rows[i].s),end:fmt(rows[j].e),sheet:src.name});
+      out.push(e);
+      i=j+1;
+    }
+  }
+  return out;
+}
+function extractAll(sources,cfgs,opts){
+  const all=[];
+  sources.forEach(src=>{
+    const cfg=cfgs[src.name]; if(!cfg||!cfg.include) return;
+    const list=cfg.layout==='blocks'?extractBlocks(src,cfg):cfg.layout==='grid'?extractGrid(src,cfg,opts):extractTable(src,cfg,opts);
+    list.forEach(e=>{ if(opts.sheetAs&&opts.sheetAs!=='none'&&!e[opts.sheetAs]) e[opts.sheetAs]=src.name; all.push(e); });
+  });
+  return all;
+}
+
+/* ---------- geometry -> grid (PDF text and OCR words) ---------- */
+function itemsToGrid(items,gapMul){
+  if(!items.length) return [];
+  const hs=items.map(i=>i.h).sort((a,b)=>a-b); const mh=hs[Math.floor(hs.length/2)]||10;
+  items=items.slice().sort((a,b)=>a.y-b.y||a.x0-b.x0);
+  const lines=[];
+  for(const it of items){
+    const L=lines[lines.length-1];
+    if(L&&Math.abs(it.y-L.y)<=mh*0.6){L.items.push(it); L.y=(L.y*(L.items.length-1)+it.y)/L.items.length;}
+    else lines.push({y:it.y,items:[it]});
+  }
+  lines.forEach(L=>{
+    L.items.sort((a,b)=>a.x0-b.x0); L.cells=[];
+    for(const it of L.items){
+      const c=L.cells[L.cells.length-1];
+      if(c&&it.x0-c.x1<mh*gapMul){c.t+=' '+it.t; c.x1=Math.max(c.x1,it.x1);}
+      else L.cells.push({t:it.t,x0:it.x0,x1:it.x1});
+    }
+  });
+  const all=lines.flatMap(L=>L.cells);
+  const minX=Math.min(...all.map(c=>c.x0)), maxX=Math.max(...all.map(c=>c.x1)), pageW=maxX-minX||1;
+  const iv=all.filter(c=>c.x1-c.x0<pageW*0.5).map(c=>[c.x0,c.x1]).sort((a,b)=>a[0]-b[0]);
+  const cols=[];
+  for(const [a,b] of iv){const c=cols[cols.length-1]; if(c&&a<=c[1]+mh*0.5) c[1]=Math.max(c[1],b); else cols.push([a,b]);}
+  const colOf=c=>{const x=(c.x0+c.x1)/2; let best=0,bd=Infinity; cols.forEach((k,i)=>{const d=x<k[0]?k[0]-x:x>k[1]?x-k[1]:0; if(d<bd){bd=d;best=i;}}); return best;};
+  return lines.map(L=>{const row=new Array(cols.length).fill(''); L.cells.forEach(c=>{const i=colOf(c); row[i]=row[i]?row[i]+' '+c.t:c.t;}); return row;});
+}
+
+/* ---------- courses, options, conflicts, combinations ---------- */
+function toSession(e){
+  const s=toMin(e.start), en=toMin(e.end);
+  if(!e.day||s==null||en==null||en<=s) return null;
+  return {day:e.day,s,e:en,name:e.course||e.code,cat:e.category,faculty:e.faculty,room:e.room,batch:e.batch,code:e.code,section:e.option,cls:e.division};
+}
+function buildCourses(entries,mode){
+  const map=new Map();
+  for(const e of entries){
+    const k=e.category+'|'+(norm(e.code)||norm(e.course));
+    if(!map.has(k)) map.set(k,{key:k,name:e.course||e.code,code:e.code,cat:e.category,options:new Map()});
+    const c=map.get(k);
+    const ok=mode==='rows'?'r'+e.id:[e.option,e.division,e.batch,e.faculty].map(norm).join('|');
+    if(!c.options.has(ok)) c.options.set(ok,{sessions:[],faculty:e.faculty,batch:e.batch,division:e.division,option:e.option});
+    const o=c.options.get(ok);
+    if(!o.sessions.some(s=>s.day===e.day&&s.start===e.start&&s.end===e.end)) o.sessions.push(e);
+  }
+  return [...map.values()].map(c=>({key:c.key,name:c.name,code:c.code,cat:c.cat,
+    options:[...c.options.values()].map(o=>Object.assign({},o,{valid:o.sessions.map(toSession).filter(Boolean)}))}));
+}
+function overlap(a,b){
+  if(a.day!==b.day) return null;
+  const s=Math.max(a.s,b.s), e=Math.min(a.e,b.e);
+  return s<e?{s,e}:null;
+}
+function findConflicts(sessions){
+  const out=[];
+  for(let i=0;i<sessions.length;i++) for(let j=i+1;j<sessions.length;j++){
+    const ov=overlap(sessions[i],sessions[j]); if(ov) out.push({a:sessions[i],b:sessions[j],ov});
+  }
+  return out;
+}
+function findCombos(courses){
+  const fixed=courses.filter(c=>c.options.length===1).flatMap(c=>c.options[0].valid);
+  const multi=courses.filter(c=>c.options.length>1);
+  const total=multi.reduce((p,c)=>p*c.options.length,1);
+  const cnt=(A,B)=>{let n=0; for(const a of A) for(const b of B) if(overlap(a,b)) n++; return n;};
+  const res=[], picks=[], stack=[fixed], exhaustive=total<=20000; let nodes=0, capped=false;
+  (function rec(i,conf){
+    if(++nodes>400000){capped=true;return;}
+    if(!exhaustive&&(conf>0||res.length>=200)) return;
+    if(i===multi.length){res.push({picks:picks.slice(),conf});return;}
+    for(let k=0;k<multi[i].options.length;k++){
+      const cur=multi[i].options[k].valid; let add=0;
+      for(const arr of stack) add+=cnt(cur,arr);
+      picks[i]=k; stack.push(cur); rec(i+1,conf+add); stack.pop();
+    }
+  })(0,0);
+  res.sort((a,b)=>a.conf-b.conf);
+  return {total,res,multi,exhaustive:exhaustive&&!capped};
+}
+/*CORE_END*/
+
+/* ================= APP ================= */
+const XLSX_URL='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+const PDFJS_URL='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+const PDFJS_WORKER='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const TESS_URL='https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.0/tesseract.min.js';
+const loaded={};
+function loadScript(url){
+  if(!loaded[url]) loaded[url]=new Promise((res,rej)=>{const s=document.createElement('script'); s.src=url; s.onload=res; s.onerror=()=>{delete loaded[url];rej(new Error('Could not load a required library. Check your connection.'));}; document.head.appendChild(s);});
+  return loaded[url];
+}
+
+const S={step:'landing',fileInfo:null,status:null,sources:[],cfgs:{},opts:{fillDown:true,sheetAs:'none'},activeSheet:'',
+  entries:[],nextId:1,search:'',selRows:new Set(),
+  sel:{major:'',minor:'',core:'',other:{}},mode:'sections',courses:[],choice:{},view:'schedule',ghost:true,combos:null,lunchAt:780,selLabel:'',pick:{division:'',cls:{},el:{}}};
+
+/* ---- extractors: each returns [{name, grid}] ---- */
+function sheetToSource(ws,name,XL){
+  if(!ws||!ws['!ref']) return {name,grid:[]};
+  const rg=XL.utils.decode_range(ws['!ref']);
+  const grid=XL.utils.sheet_to_json(ws,{header:1,raw:false,defval:'',blankrows:true});
+  (ws['!merges']||[]).forEach(m=>{
+    const r0=m.s.r-rg.s.r, c0=m.s.c-rg.s.c;
+    const v=grid[r0]&&grid[r0][c0]; if(v===''||v==null) return;
+    for(let r=r0;r<=m.e.r-rg.s.r;r++) for(let c=c0;c<=m.e.c-rg.s.c;c++){
+      if(!grid[r]) grid[r]=[]; if(grid[r][c]===''||grid[r][c]==null) grid[r][c]=v;
+    }
+  });
+  return {name,grid:grid.map(r=>Array.from(r,x=>String(x==null?'':x).replace(/\u00a0/g,' ').replace(/[ \t]+/g,' ').trim()))};
+}
+async function withTimeout(p,ms,msg){let t; return Promise.race([p,new Promise((_,rej)=>{t=setTimeout(()=>rej(new Error(msg)),ms);})]).finally(()=>clearTimeout(t));}
+async function ocrToGrid(image,say){
+  say('Loading the OCR engine…');
+  await loadScript(TESS_URL);
+  const worker=await withTimeout(Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text') say('Reading text from the image… '+Math.round(m.progress*100)+'%');}}),60000,'The OCR engine could not start in this environment.');
+  try{
+    const {data}=await worker.recognize(image);
+    const items=(data.words||[]).filter(w=>w.text&&w.text.trim()&&w.confidence>30).map(w=>({t:w.text,x0:w.bbox.x0,x1:w.bbox.x1,y:(w.bbox.y0+w.bbox.y1)/2,h:Math.max(1,w.bbox.y1-w.bbox.y0)}));
+    if(!items.length) throw new Error('No text could be read from the image.');
+    return itemsToGrid(items,1.2);
+  } finally {try{await worker.terminate();}catch(e){}}
+}
+const Extractors={
+  async xlsx(file){await loadScript(XLSX_URL); const wb=XLSX.read(await file.arrayBuffer(),{type:'array'}); return wb.SheetNames.map(n=>sheetToSource(wb.Sheets[n],n,XLSX));},
+  async csv(file){await loadScript(XLSX_URL); const wb=XLSX.read(await file.text(),{type:'string'}); return wb.SheetNames.map(n=>sheetToSource(wb.Sheets[n],n,XLSX));},
+  async paste(text){
+    if(text.includes('\t')||text.split('\n').length<2&&false) return [{name:'Pasted table',grid:text.split(/\r?\n/).filter(l=>l.trim()).map(l=>l.split('\t').map(x=>x.trim()))}];
+    await loadScript(XLSX_URL); const wb=XLSX.read(text,{type:'string'}); return wb.SheetNames.map(n=>sheetToSource(wb.Sheets[n],'Pasted table',XLSX));
+  },
+  async pdf(file,say){
+    await loadScript(PDFJS_URL); pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS_WORKER;
+    const doc=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise; const out=[];
+    for(let p=1;p<=doc.numPages;p++){
+      say('Reading page '+p+' of '+doc.numPages+'…');
+      const page=await doc.getPage(p); const tc=await page.getTextContent();
+      const items=tc.items.filter(i=>i.str&&i.str.trim()).map(i=>({t:i.str.trim(),x0:i.transform[4],x1:i.transform[4]+i.width,y:-i.transform[5],h:Math.abs(i.height)||Math.abs(i.transform[3])||10}));
+      let grid;
+      if(items.length) grid=itemsToGrid(items,0.8);
+      else{
+        say('Page '+p+' looks scanned — running OCR…');
+        const vp=page.getViewport({scale:2.5}); const cv=document.createElement('canvas'); cv.width=vp.width; cv.height=vp.height;
+        await page.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+        grid=await ocrToGrid(cv,say);
+      }
+      out.push({name:doc.numPages>1?'Page '+p:'Page 1',grid});
+    }
+    return out;
+  },
+  async image(file,say){const grid=await ocrToGrid(file,say); return [{name:'Image',grid}];}
+};
+function kindOf(file){
+  const n=file.name.toLowerCase();
+  if(/\.(xlsx|xlsm|xls)$/.test(n)) return 'xlsx';
+  if(/\.(csv|tsv|txt)$/.test(n)) return 'csv';
+  if(/\.pdf$/.test(n)||file.type==='application/pdf') return 'pdf';
+  if(/\.(png|jpe?g|webp)$/.test(n)||/^image\//.test(file.type)) return 'image';
+  return null;
+}
+const sizeStr=b=>b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(1)+' MB';
+
+async function handleFile(file){
+  const kind=kindOf(file);
+  S.fileInfo={name:file.name,type:kind?({xlsx:'Excel',csv:'CSV',pdf:'PDF',image:'Image'})[kind]:(file.type||'Unknown'),size:sizeStr(file.size)};
+  S.status={kind:'',text:'Uploaded. Starting…'}; render();
+  if(!kind){S.status={kind:'err',text:'This file type is not supported. Use .xlsx, .csv, .pdf, .png, .jpg or .jpeg.'}; render(); return;}
+  const say=t=>setStatus(t,'');
+  try{
+    say(kind==='image'||kind==='pdf'?'Reading your timetable… (images and scanned pages need OCR, which can take a minute)':'Reading your timetable…');
+    const sources=await Extractors[kind](file,say);
+    await finishExtraction(sources);
+  }catch(err){S.status={kind:'err',text:(err&&err.message)||'Something went wrong while reading the file.'}; render();}
+}
+async function finishExtraction(sources){
+  sources=sources.filter(s=>s.grid.length);
+  if(!sources.length) throw new Error('No table content was found in this file.');
+  S.sources=sources; S.cfgs={}; sources.forEach(s=>S.cfgs[s.name]=autoConfig(s)); S.activeSheet=sources[0].name;
+  runExtract();
+  S.status={kind:'ok',text:'Timetable successfully processed.'}; render();
+  setTimeout(()=>{if(S.step==='upload') go('verify');},700);
+}
+function setStatus(t,kind){S.status={kind,text:t}; const el=document.getElementById('status'); if(el){el.textContent=t; el.className='status '+kind;}}
+function runExtract(){
+  const list=extractAll(S.sources,S.cfgs,S.opts);
+  S.entries=list.map(e=>Object.assign(e,{id:S.nextId++})); S.selRows=new Set(); S.pick={division:'',cls:{},el:{}};
+}
+
+/* ---- navigation ---- */
+function go(step){S.step=step; render(); window.scrollTo(0,0);}
+const STEPS=[['upload','Upload'],['verify','Review'],['select','Select'],['result','Timetable']];
+function renderCrumbs(){
+  const idx=STEPS.findIndex(s=>s[0]===S.step);
+  document.getElementById('crumbs').innerHTML=S.step==='landing'?'':STEPS.map((s,i)=>'<span class="'+(i===idx?'on':i<idx?'done':'')+'">'+s[1]+'</span>').join('');
+}
+function render(){
+  renderCrumbs();
+  const app=document.getElementById('app');
+  app.innerHTML=({landing:vLanding,upload:vUpload,verify:vVerify,select:vSelect,result:vResult})[S.step]();
+  if(S.step==='result') afterResult();
+}
+
+/* ---- landing ---- */
+function vLanding(){
+  return `<section class="hero"><div>
+    <h1>Turn your college timetable into your personal schedule.</h1>
+    <p class="lead">Upload the master timetable, select your Major, Minor and Division, and instantly see the courses and time slots relevant to you.</p>
+    <button class="btn primary big" data-act="start">Create My Timetable</button>
+  </div>
+  <div class="mini" aria-hidden="true"><div class="cap">Sample layout — your own timetable will appear here</div>
+    <div class="mini-grid"><div class="h"></div><div class="h">Mon</div><div class="h">Tue</div><div class="h">Wed</div><div class="h">Thu</div><div class="h">Fri</div>
+    <div class="t">9:00</div><div style="background:var(--major-bg)">Course A<br><small>Major</small></div><div></div><div style="background:var(--core-bg)">Course E<br><small>Core</small></div><div></div><div style="background:var(--major-bg)">Course B<br><small>Major</small></div>
+    <div class="t">10:00</div><div></div><div style="background:var(--minor-bg)">Course C<br><small>Minor</small></div><div></div><div style="background:var(--major-bg)">Course A<br><small>Major</small></div><div></div>
+    <div class="t">11:00</div><div style="background:var(--core-bg)">Course E<br><small>Core</small></div><div></div><div style="background:var(--minor-bg)">Course D<br><small>Minor</small></div><div></div><div style="background:var(--minor-bg)">Course C<br><small>Minor</small></div></div></div></section>
+  <section class="steps3">
+    <div class="card"><h3>Upload timetable</h3><p class="muted">Excel, CSV, PDF or a screenshot. Read on your device.</p></div>
+    <div class="card"><h3>Select your details</h3><p class="muted">Major, Minor and Core Division come from your file, not from a fixed list.</p></div>
+    <div class="card"><h3>Get your personal timetable</h3><p class="muted">See every option, spot clashes, and find combinations that fit.</p></div>
+  </section>`;
+}
+
+/* ---- upload ---- */
+function vUpload(){
+  const f=S.fileInfo, st=S.status;
+  return `<h2 style="font-size:30px;margin-bottom:16px">Upload your timetable</h2>
+  <div class="drop" id="drop" tabindex="0" role="button" data-act="pick" aria-label="Upload timetable file">
+    <h2>Drop your file here, or click to choose</h2>
+    <p class="muted" style="margin:0">Excel (.xlsx) · CSV · PDF · Image (.png, .jpg, .jpeg)</p>
+    <input type="file" id="file" class="sr" accept=".xlsx,.xls,.xlsm,.csv,.tsv,.pdf,.png,.jpg,.jpeg,.webp">
+  </div>
+  ${f?`<div class="card" style="margin-top:16px"><div class="kv"><span><b>File:</b> ${esc(f.name)}</span><span><b>Type:</b> ${esc(f.type)}</span><span><b>Size:</b> ${esc(f.size)}</span></div>
+    ${st?`<div class="status ${st.kind}" id="status" role="status">${esc(st.text)}</div>`:''}</div>`:''}
+  <details style="margin-top:16px"><summary>Privacy: how your file is processed</summary>
+    <p class="muted">Excel, CSV and text-based PDF files are read entirely inside this browser tab. Nothing is uploaded to a server.</p>
+    <p class="muted">Images and scanned PDFs need OCR (text recognition). The OCR engine is downloaded from a public code CDN into your browser and runs on your device; your image is not uploaded. If your network or browser blocks that download, use Excel/CSV, or paste the table below. The OCR step is a separate module, so another provider can replace it later.</p></details>
+  <details style="margin-top:12px"><summary>No file? Paste the table instead</summary>
+    <p class="muted">Copy the table from Excel or Google Sheets (with the header row) and paste it here.</p>
+    <textarea id="paste" placeholder="Course&#9;Code&#9;Type&#9;Day&#9;Start&#9;End …"></textarea>
+    <div style="margin-top:10px"><button class="btn" data-act="usepaste">Read pasted table</button></div></details>`;
+}
+
+/* ---- verify ---- */
+const EDIT_FIELDS=[['course','Course'],['code','Code'],['category','Type'],['specialisation','Specialisation'],['division','Division'],['batch','Batch'],['option','Option'],['day','Day'],['start','Start'],['end','End'],['faculty','Faculty'],['room','Room']];
+const hasCats=()=>S.entries.some(e=>['Major','Minor','Core'].includes(e.category));
+function issueOf(e,hc){
+  if(hc===undefined) hc=hasCats();
+  if(!e.course&&!e.code) return ['bad','No course name'];
+  if(!e.day) return ['bad','No day'];
+  const s=toMin(e.start), en=toMin(e.end);
+  if(s==null||en==null) return ['bad','Missing time'];
+  if(en<=s) return ['bad','End is not after start'];
+  if(!e.category&&hc) return ['warn','No type set'];
+  return ['',''];
+}
+function cellInput(e,f){
+  if(f==='day') return `<select data-id="${e.id}" data-f="day"><option value=""></option>${DAY_NAMES.map(d=>`<option${e.day===d?' selected':''}>${d}</option>`).join('')}</select>`;
+  if(f==='start'||f==='end') return `<input type="time" data-id="${e.id}" data-f="${f}" value="${esc(e[f])}">`;
+  return `<input data-id="${e.id}" data-f="${f}" value="${esc(e[f])}"${f==='category'?' list="cats"':''}>`;
+}
+function rowsHtml(){
+  const q=norm(S.search);
+  const list=S.entries.filter(e=>!q||norm(Object.values(e).join(' ')).includes(q));
+  S.shown=list.map(e=>e.id);
+  const hc=hasCats();
+  const html=list.slice(0,400).map(e=>{
+    const [k,t]=issueOf(e,hc);
+    return `<tr data-row="${e.id}" class="${k==='bad'?'bad':''}"><td><input type="checkbox" data-sel="${e.id}" ${S.selRows.has(e.id)?'checked':''} aria-label="Select row"></td>${EDIT_FIELDS.map(([f])=>`<td>${cellInput(e,f)}</td>`).join('')}<td class="flag">${esc(t)}</td><td><button class="btn small" data-act="delrow" data-id="${e.id}" aria-label="Delete row">✕</button></td></tr>`;
+  }).join('');
+  return html+(list.length>400?`<tr><td colspan="15" class="muted">Showing the first 400 of ${list.length} matching rows. Use search to narrow down.</td></tr>`:'')+(!list.length?'<tr><td colspan="15" class="muted">No entries to show.</td></tr>':'');
+}
+function summaryHtml(){
+  const hc=hasCats(); const bad=S.entries.filter(e=>issueOf(e,hc)[0]==='bad').length, warn=S.entries.filter(e=>issueOf(e,hc)[0]==='warn').length;
+  return `<b>We found ${S.entries.length} timetable entries.</b> ${bad?`<span style="color:var(--bad)">${bad} need attention (missing day, time or name).</span>`:'<span style="color:var(--ok)">All entries have a day and time.</span>'}${warn?` <span class="muted">${warn} have no Type (Major / Minor / Core) yet.</span>`:''}`;
+}
+function mappingHtml(){
+  const cfg=S.cfgs[S.activeSheet]; if(!cfg) return '';
+  const src=S.sources.find(s=>s.name===S.activeSheet);
+  const width=Math.max(0,...src.grid.map(r=>r.length));
+  const hdr=(src.grid[cfg.headerRow]||[]);
+  const colOpts=sel=>'<option value="">— none —</option>'+Array.from({length:width},(_,i)=>`<option value="${i}"${sel===i?' selected':''}>${esc((hdr[i]||'Column '+(i+1)).slice(0,30))}</option>`).join('');
+  const label={course:'Course name',code:'Course code',category:'Type (Major/Minor/Core)',specialisation:'Specialisation',division:'Division',batch:'Batch',option:'Option / section',semester:'Semester',day:'Day',start:'Start time',end:'End time',time:'Time range (one column)',faculty:'Faculty',room:'Room'};
+  const preview=src.grid.slice(0,8).map(r=>'<tr>'+Array.from({length:Math.min(width,12)},(_,i)=>`<td>${esc((r[i]||'').slice(0,28))}</td>`).join('')+'</tr>').join('');
+  return `<div class="row" style="margin:10px 0">
+    ${S.sources.length>1?`<div class="field" style="min-width:160px"><label>Sheet / page</label><select data-cfg="sheet">${S.sources.map(s=>`<option${s.name===S.activeSheet?' selected':''}>${esc(dispName(s))}</option>`).join('')}</select></div>`:''}
+    <div class="field" style="min-width:160px"><label>Layout</label><select data-cfg="layout"><option value="table"${cfg.layout==='table'?' selected':''}>List (one row per class)</option><option value="blocks"${cfg.layout==='blocks'?' selected':''}>Day blocks (classes as columns)</option><option value="grid"${cfg.layout==='grid'?' selected':''}>Grid (days × times)</option></select></div>
+    <div class="field" style="min-width:120px"><label>Header row</label><input type="number" min="1" data-cfg="headerRow" value="${cfg.headerRow+1}"></div>
+    <div class="field" style="min-width:160px"><label>Include this sheet</label><select data-cfg="include"><option value="1"${cfg.include?' selected':''}>Yes</option><option value="0"${!cfg.include?' selected':''}>No</option></select></div>
+    ${S.sources.length>1?`<div class="field" style="min-width:200px"><label>Use sheet name as</label><select data-opt="sheetAs">${[['none','Nothing'],['division','Division'],['specialisation','Specialisation'],['category','Type']].map(([v,l])=>`<option value="${v}"${S.opts.sheetAs===v?' selected':''}>${l}</option>`).join('')}</select></div>`:''}
+  </div>
+  ${cfg.unrecognised?'<div class="notice">We could not recognise the layout of this sheet. Set the header row and match the columns below, or switch the layout to Grid.</div>':''}
+  ${cfg.layout==='blocks'?`<p class="muted">Day blocks detected: ${esc((cfg.dayRows||[]).map(r=>src.grid[r][0]).join(', ')||'none')}. Each class column (for example “Class - TY A”) becomes the Division. A section letter at the end of a course name (“Mergers and Acquisitions-B”) becomes the Option. A time written inside a cell (“8:30 to 11:00”) wins over the time in the left column.</p>`:cfg.layout==='grid'?`<p class="muted">Grid detected: days found are ${esc((cfg.dayCols||[]).map(d=>d[1]).join(', ')||'none')}. Each filled cell becomes one entry; consecutive identical cells are joined into one longer class. Type and Division are read from cell text when it says Major/Minor/Core or Div/Section; otherwise set them below with "Set for selected rows".</p>`
+  :`<div class="row" style="align-items:stretch">${FIELDS.map(f=>`<div class="field" style="min-width:170px;flex:0 0 170px"><label>${label[f]}</label><select data-cfg="map" data-field="${f}">${colOpts(cfg.mapping[f]==null?null:cfg.mapping[f])}</select></div>`).join('')}</div>
+  <label style="display:block;margin-top:10px"><input type="checkbox" data-opt="fillDown" ${S.opts.fillDown?'checked':''}> Fill blank Day / Type / Specialisation / Division cells from the row above (for merged cells)</label>`}
+  <div style="margin:12px 0"><button class="btn primary" data-act="reextract">Re-read with these settings</button> <span class="muted">This replaces the entries below, including manual edits.</span></div>
+  <div class="scroll"><table><tbody>${preview}</tbody></table></div>`;
+}
+function vVerify(){
+  const bulkFields=[['category','Type'],['specialisation','Specialisation'],['division','Division'],['batch','Batch'],['semester','Semester'],['faculty','Faculty'],['room','Room']];
+  return `<h2 style="font-size:30px;margin-bottom:6px">Check what we read</h2>
+  <p class="muted" style="margin-top:0">Automatic reading can make mistakes, especially from images. Fix anything wrong before continuing. Everything downstream uses this table.</p>
+  <details><summary>How we read this file (column matching)</summary><div id="mapping">${mappingHtml()}</div></details>
+  <div class="card" style="margin-top:16px">
+    <div id="vsummary" style="margin-bottom:12px">${summaryHtml()}</div>
+    <div class="row" style="margin-bottom:12px">
+      <input id="search" type="search" placeholder="Search entries" value="${esc(S.search)}" style="flex:1;min-width:180px;border:1px solid var(--line-strong);border-radius:10px;padding:8px 12px;background:var(--surface)" aria-label="Search entries">
+      <button class="btn small" data-act="selshown">Select all shown</button><button class="btn small" data-act="selnone">Clear selection</button>
+      <button class="btn small" data-act="addrow">+ Add entry</button>
+    </div>
+    <div class="row" style="margin-bottom:12px"><span class="muted">Set for selected rows:</span>
+      <select id="bulkf" aria-label="Field to set" style="border:1px solid var(--line-strong);border-radius:8px;padding:6px 8px;background:var(--surface)">${bulkFields.map(([f,l])=>`<option value="${f}">${l}</option>`).join('')}</select>
+      <input id="bulkv" list="cats" placeholder="Value" style="border:1px solid var(--line-strong);border-radius:8px;padding:6px 8px;background:var(--surface)" aria-label="Value">
+      <button class="btn small" data-act="bulk">Apply</button></div>
+    <datalist id="cats"><option>Major</option><option>Minor</option><option>Core</option></datalist>
+    <div class="scroll" style="max-height:60vh"><table><thead><tr><th></th>${EDIT_FIELDS.map(([,l])=>`<th>${l}</th>`).join('')}<th>Check</th><th></th></tr></thead><tbody id="tbody">${rowsHtml()}</tbody></table></div>
+  </div>
+  <div class="row" style="margin-top:18px"><button class="btn" data-act="toupload">Back</button><button class="btn primary" data-act="tosel" ${S.entries.length?'':'disabled'}>Looks right — continue</button></div>`;
+}
+
+/* ---- select ---- */
+function distinct(list){
+  const m=new Map(); list.forEach(v=>{const k=norm(v); if(k&&!m.has(k)) m.set(k,String(v).trim());});
+  return [...m.values()].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+}
+function selectOptions(){
+  const E=S.entries;
+  const majors=distinct(E.filter(e=>e.category==='Major').map(e=>e.specialisation));
+  const minors=distinct(E.filter(e=>e.category==='Minor').map(e=>e.specialisation));
+  const cores=distinct(E.filter(e=>e.category==='Core').map(e=>e.division));
+  const otherCats=distinct(E.map(e=>e.category).filter(c=>c&&!['Major','Minor','Core'].includes(c)));
+  const others=otherCats.map(c=>({cat:c,values:distinct(E.filter(e=>norm(e.category)===norm(c)).map(e=>e.specialisation||e.division))}));
+  return {majors,minors,cores,others};
+}
+function optList(vals,cur,none){return `<option value="">${none}</option>`+vals.map(v=>`<option${norm(v)===norm(cur)?' selected':''}>${esc(v)}</option>`).join('');}
+function vSelect(){
+  if(!hasCats()) return vSelectPicker();
+  const o=selectOptions(), E=S.entries;
+  const noCat=E.filter(e=>!e.category).length;
+  const coreNoDiv=E.filter(e=>e.category==='Core'&&!e.division).length;
+  const majNoSpec=E.filter(e=>e.category==='Major'&&!e.specialisation).length, minNoSpec=E.filter(e=>e.category==='Minor'&&!e.specialisation).length;
+  return `<h2 style="font-size:30px;margin-bottom:6px">Select your details</h2>
+  <p class="muted" style="margin-top:0">These lists come from the timetable you uploaded.</p>
+  <div class="card">
+    <div class="row" style="align-items:flex-start">
+      <div class="field"><label for="s-major">Major</label><select id="s-major" data-sel-key="major">${optList(o.majors,S.sel.major,'Select your Major')}</select></div>
+      <div class="field"><label for="s-minor">Minor</label><select id="s-minor" data-sel-key="minor">${optList(o.minors,S.sel.minor,'Select your Minor (or none)')}</select></div>
+      <div class="field"><label for="s-core">Core Division</label><select id="s-core" data-sel-key="core">${optList(o.cores,S.sel.core,'Select your Core Division')}</select></div>
+    </div>
+    ${o.others.length?`<div class="row" style="margin-top:14px;align-items:flex-start">${o.others.map((x,i)=>`<div class="field"><label>${esc(x.cat)} group (optional)</label><select data-sel-other="${esc(x.cat)}">${optList(x.values,S.sel.other[x.cat],'None')}</select></div>`).join('')}</div>`:''}
+    <div class="field" style="margin-top:16px;max-width:560px"><label for="s-mode">When a course appears in several rows</label>
+      <select id="s-mode"><option value="sections"${S.mode==='sections'?' selected':''}>Group rows with the same faculty / batch / division into one option (rows are sessions of that option)</option><option value="rows"${S.mode==='rows'?' selected':''}>Treat every row as a separate option</option></select></div>
+    ${!o.majors.length&&!o.minors.length&&!o.cores.length?'<div class="notice bad">No Major, Minor or Core entries were found. Go back and set the Type (and Specialisation / Division) for your entries.</div>':''}
+    ${noCat?`<div class="notice">${noCat} entries have no Type, so they cannot be matched to Major, Minor or Core and will not appear.</div>`:''}
+    ${coreNoDiv?`<div class="notice">${coreNoDiv} Core entries have no Division and will not appear.</div>`:''}
+    ${majNoSpec||minNoSpec?`<div class="notice">${majNoSpec+minNoSpec} Major/Minor entries have no Specialisation and will not appear.</div>`:''}
+  </div>
+  <div class="row" style="margin-top:18px"><button class="btn" data-act="toverify">Back to review</button><button class="btn primary big" data-act="generate">Generate My Timetable</button></div>`;
+}
+
+/* ---- picker mode: used when the file has no Major/Minor/Core labels (e.g. class-column timetables) ---- */
+const TYPES=['Core','Major','Minor','Elective'];
+function sessText(list){
+  const seen=new Set();
+  return list.slice().sort((a,b)=>DAY_NAMES.indexOf(a.day)-DAY_NAMES.indexOf(b.day)||(toMin(a.start)||0)-(toMin(b.start)||0))
+    .map(e=>e.day?(e.day+' '+(toMin(e.start)!=null&&toMin(e.end)!=null?disp(toMin(e.start))+'–'+disp(toMin(e.end)):'time?')):'day?')
+    .filter(x=>!seen.has(x)&&seen.add(x)).join(', ');
+}
+function pickerData(){
+  const E=S.entries, cls=new Map(), el=new Map();
+  E.forEach(e=>{
+    const name=e.course||e.code; if(!name) return;
+    if(e.option){
+      const k=norm(name); if(!el.has(k)) el.set(k,{name,options:new Map()});
+      const o=el.get(k).options, ok=norm(e.option)+'|'+norm(e.division);
+      if(!o.has(ok)) o.set(ok,{section:e.option,division:e.division,sessions:[]});
+      o.get(ok).sessions.push(e);
+    } else {
+      const k=norm(name)+'||'+norm(e.division);
+      if(!cls.has(k)) cls.set(k,{key:k,name,division:e.division,sessions:[]});
+      cls.get(k).sessions.push(e);
+    }
+  });
+  const shared={}; cls.forEach(g=>{const n=norm(g.name); (shared[n]=shared[n]||new Set()).add(norm(g.division));});
+  return {divs:distinct(E.map(e=>e.division)),cls:[...cls.values()],el:[...el.values()],shared};
+}
+function pickState(kind,key){
+  const P=S.pick[kind]; if(!P[key]) P[key]={on:false,type:kind==='el'?'Elective':'Major'};
+  return P[key];
+}
+function applyPickDefaults(){
+  const d=pickerData(); S.pick.cls={};
+  d.cls.forEach(g=>{
+    const shared=d.shared[norm(g.name)].size>=2, inDiv=norm(g.division)===norm(S.pick.division);
+    S.pick.cls[g.key]={on:inDiv&&shared,type:shared?'Core':'Major'};
+  });
+}
+function typeSel(kind,key,cur){return `<select data-pick-type="${kind}" data-key="${esc(key)}" aria-label="Type">${TYPES.map(t=>`<option${t===cur?' selected':''}>${t}</option>`).join('')}</select>`;}
+function vSelectPicker(){
+  const d=pickerData(), P=S.pick;
+  const mine=d.cls.filter(g=>!d.divs.length||norm(g.division)===norm(P.division));
+  const others=d.cls.filter(g=>!mine.includes(g));
+  const byName=(a,b)=>a.name.localeCompare(b.name);
+  const rows=(groups,showCls)=>groups.slice().sort(byName).map(g=>{const st=P.cls[g.key]||{on:false,type:'Major'};
+    return `<tr><td><input type="checkbox" data-pick-on="cls" data-key="${esc(g.key)}" ${st.on?'checked':''} aria-label="Take ${esc(g.name)}"></td><td>${esc(g.name)}${showCls?' <span class="muted">('+esc(g.division)+')</span>':''}</td><td class="muted">${esc(sessText(g.sessions))}</td><td>${typeSel('cls',g.key,st.type)}</td></tr>`;}).join('');
+  const head='<thead><tr><th></th><th>Course</th><th>When</th><th>Type</th></tr></thead>';
+  const ready=!d.divs.length||P.division;
+  const elRows=d.el.slice().sort(byName).map(x=>{const st=P.el[norm(x.name)]||{on:false,type:'Elective'};
+    const secs=[...x.options.values()].sort((a,b)=>a.section.localeCompare(b.section)).map(o=>`<b>${esc(o.section)}</b>${o.division?' ('+esc(o.division)+')':''}: ${esc(sessText(o.sessions))}`).join('<br>');
+    return `<tr><td><input type="checkbox" data-pick-on="el" data-key="${esc(norm(x.name))}" ${st.on?'checked':''} aria-label="Take ${esc(x.name)}"></td><td>${esc(x.name)}<div class="muted">${x.options.size} section${x.options.size===1?'':'s'}</div></td><td class="muted">${secs}</td><td>${typeSel('el',norm(x.name),st.type)}</td></tr>`;}).join('');
+  return `<h2 style="font-size:30px;margin-bottom:6px">Select your courses</h2>
+  <p class="muted" style="margin-top:0">This timetable is organised by class, with no Major / Minor / Core labels, so you choose your class and then tick the courses you take. You set each course’s type, and it is shown on your timetable.</p>
+  ${d.divs.length?`<div class="card"><div class="field" style="max-width:360px"><label for="s-div">Your class (Core Division)</label><select id="s-div" data-pick-div>${optList(d.divs,P.division,'Select your class')}</select></div></div>`:''}
+  ${ready?`<div class="card"><h3 style="font-size:20px;margin-bottom:6px">Courses${P.division?' in '+esc(P.division):''}</h3>
+    <p class="muted" style="margin-top:0">Ticked by default: courses that run in more than one class, which are usually the core courses. Untick or re-type anything that is not right.</p>
+    <div class="scroll"><table>${head}<tbody>${rows(mine,false)||'<tr><td colspan="4" class="muted">No fixed-section courses in this class.</td></tr>'}</tbody></table></div>
+    ${others.length?`<details style="margin-top:12px"><summary>Courses from other classes (${others.length})</summary><div class="scroll" style="margin-top:10px"><table>${head}<tbody>${rows(others,true)}</tbody></table></div></details>`:''}</div>
+  ${d.el.length?`<div class="card"><h3 style="font-size:20px;margin-bottom:6px">Courses with sections (electives)</h3>
+    <p class="muted" style="margin-top:0">Tick every course you take. You choose the section on the next screen, or let the finder suggest combinations that do not clash.</p>
+    <div class="scroll"><table>${head}<tbody>${elRows}</tbody></table></div></div>`:''}
+  <div class="card"><div class="field" style="max-width:560px"><label for="s-mode">When a course appears in several rows</label>
+    <select id="s-mode"><option value="sections"${S.mode==='sections'?' selected':''}>Group rows with the same section / class into one option</option><option value="rows"${S.mode==='rows'?' selected':''}>Treat every row as a separate option</option></select></div></div>`
+  :'<div class="notice">Choose your class to see its courses.</div>'}
+  <div class="row" style="margin-top:18px"><button class="btn" data-act="toverify">Back to review</button><button class="btn primary big" data-act="generate" ${ready?'':'disabled'}>Generate My Timetable</button></div>`;
+}
+function generatePicker(){
+  const picked=[];
+  S.entries.forEach(e=>{
+    const name=e.course||e.code; if(!name) return;
+    const st=e.option?S.pick.el[norm(name)]:S.pick.cls[norm(name)+'||'+norm(e.division)];
+    if(st&&st.on) picked.push(Object.assign({},e,{category:st.type}));
+  });
+  S.picked=picked; S.courses=buildCourses(picked,S.mode); S.choice={}; S.combos=null;
+  const nEl=Object.values(S.pick.el).filter(x=>x.on).length;
+  S.selLabel=[S.pick.division&&'Class: '+S.pick.division, nEl&&nEl+' elective course'+(nEl===1?'':'s')].filter(Boolean).join(' · ')||'No selections';
+  go('result');
+}
+function scheduleHtml(active,conflicts){
+  if(!active.length) return '<div class="notice">Nothing chosen yet. Pick a section for each course above.</div>';
+  const clash=new Set(); conflicts.forEach(c=>{clash.add(c.a);clash.add(c.b);});
+  const days=DAY_NAMES.filter(d=>active.some(s=>s.day===d));
+  const parts=days.map(d=>({am:active.filter(s=>s.day===d&&s.s<S.lunchAt).sort((a,b)=>a.s-b.s),pm:active.filter(s=>s.day===d&&s.s>=S.lunchAt).sort((a,b)=>a.s-b.s)}));
+  const nAm=Math.max(...parts.map(p=>p.am.length)), nPm=Math.max(...parts.map(p=>p.pm.length));
+  const cell=s=>s?`<td class="sc ${catClass(s.cat)}${clash.has(s)?' clash':''}"><div class="sc-name">${clash.has(s)?'⚠ ':''}${esc(dispName(s))}</div><div class="sc-time">${disp(s.s)}–${disp(s.e)}</div><div class="sc-meta"><span class="pill ${catClass(s.cat)}">${esc(s.cat||'Other')}</span>${s.room?' '+esc(s.room):''}${s.faculty?' · '+esc(s.faculty):''}</div></td>`:'<td class="sc empty"></td>';
+  const block=key=>Array.from({length:key==='am'?nAm:nPm},(_,i)=>`<tr>${parts.map(p=>cell(p[key][i])).join('')}</tr>`).join('');
+  return `<div class="scroll"><table class="sched"><thead><tr>${days.map(d=>`<th>${{Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday'}[d]}</th>`).join('')}</tr></thead><tbody>${block('am')}${nPm?`<tr><td class="lunch" colspan="${days.length}">Lunch</td></tr>`:''}${block('pm')}</tbody></table></div>`;
+}
+function generate(){
+  if(!hasCats()){generatePicker(); return;}
+  S.selLabel='';
+  const eq=(a,b)=>norm(a)===norm(b), picked=[];
+  S.entries.forEach(e=>{
+    if(e.category==='Major'&&S.sel.major&&eq(e.specialisation,S.sel.major)) picked.push(e);
+    else if(e.category==='Minor'&&S.sel.minor&&eq(e.specialisation,S.sel.minor)) picked.push(e);
+    else if(e.category==='Core'&&S.sel.core&&eq(e.division,S.sel.core)) picked.push(e);
+    else if(e.category&&!['Major','Minor','Core'].includes(e.category)&&S.sel.other[e.category]&&eq(e.specialisation||e.division,S.sel.other[e.category])) picked.push(e);
+  });
+  S.picked=picked; S.courses=buildCourses(picked,S.mode); S.choice={}; S.combos=null;
+  go('result');
+}
+
+/* ---- result ---- */
+function activeSessions(){
+  const out=[];
+  S.courses.forEach(c=>{const idx=c.options.length===1?0:S.choice[c.key]; if(idx==null||!c.options[idx]) return; c.options[idx].valid.forEach(s=>out.push(Object.assign({},s,{courseKey:c.key,opt:idx})));});
+  return out;
+}
+function ghostSessions(){
+  const out=[];
+  S.courses.forEach(c=>{ if(c.options.length<2) return; c.options.forEach((o,i)=>{ if(S.choice[c.key]===i) return; o.valid.forEach(s=>out.push(Object.assign({},s,{courseKey:c.key,opt:i,ghost:true})));});});
+  return out;
+}
+const optLabel=(c,i)=>{const o=c.options[i]; const base=o.option?((/^[A-Za-z]$/.test(o.option)?'Section ':'Option ')+o.option):('Option '+(i+1)); return base+(o.division?' · '+o.division:'');};
+function layoutDay(items){
+  items=items.slice().sort((a,b)=>a.s-b.s||a.e-b.e);
+  const out=[]; let cluster=[], cEnd=-1;
+  const flush=()=>{const ends=[]; cluster.forEach(it=>{let l=ends.findIndex(e=>e<=it.s); if(l<0){l=ends.length; ends.push(it.e);} else ends[l]=it.e; it.lane=l;}); cluster.forEach(it=>it.lanes=ends.length); out.push(...cluster); cluster=[];};
+  for(const it of items){ if(cluster.length&&it.s>=cEnd){flush(); cEnd=-1;} cluster.push(it); cEnd=Math.max(cEnd,it.e); }
+  if(cluster.length) flush();
+  return out;
+}
+function timetableHtml(active,ghost,conflicts){
+  const all=active.concat(ghost);
+  if(!all.length) return '<div class="notice">Nothing to place yet. Courses without a valid day and time cannot be drawn.</div>';
+  const clash=new Set(); conflicts.forEach(c=>{clash.add(c.a);clash.add(c.b);});
+  const days=DAY_NAMES.filter(d=>all.some(s=>s.day===d));
+  const minS=Math.floor(Math.min(...all.map(s=>s.s))/60)*60, maxE=Math.ceil(Math.max(...all.map(s=>s.e))/60)*60, H=maxE-minS;
+  const hours=[]; for(let m=minS;m<=maxE;m+=60) hours.push(m);
+  const cols=days.map(d=>{
+    const items=layoutDay(all.filter(s=>s.day===d).map(s=>Object.assign(s,{clash:clash.has(s)})));
+    return `<div class="tt-col" style="height:${H}px">${hours.map(m=>`<div class="tt-line" style="top:${m-minS}px"></div>`).join('')}${items.map(s=>{
+      const w=100/s.lanes;
+      return `<div class="blk ${catClass(s.cat)}${s.ghost?' ghost':''}${s.clash?' clash':''}" style="top:${s.s-minS}px;height:${Math.max(24,s.e-s.s-2)}px;left:calc(${s.lane*w}% + 2px);width:calc(${w}% - 4px)" title="${esc(dispName(s))} ${disp(s.s)}–${disp(s.e)}"><b>${s.clash?'⚠ ':''}${esc(dispName(s))}</b>${esc(s.cat||'Other')}${s.ghost?' · option '+(s.opt+1)+' (not chosen)':''}<br>${disp(s.s)}–${disp(s.e)}${s.room?' · '+esc(s.room):''}</div>`;}).join('')}</div>`;
+  }).join('');
+  return `<div class="tt"><div class="tt-inner" style="--nd:${days.length}"><div class="tt-head"><div></div>${days.map(d=>`<div>${d}</div>`).join('')}</div>
+    <div class="tt-body"><div class="tt-gutter" style="height:${H}px">${hours.map(m=>`<span style="top:${m-minS}px">${disp(m)}</span>`).join('')}</div>${cols}</div></div></div>`;
+}
+function optionsHtml(){
+  const multi=S.courses.filter(c=>c.options.length>1);
+  if(!multi.length) return '';
+  const rows=multi.map(c=>{
+    const head=`<tr class="course-row"><td colspan="7">${esc(c.name)} ${c.code?'<span class="muted">('+esc(c.code)+')</span> ':''}<span class="pill ${catClass(c.cat)}">${esc(c.cat||'Other')}</span> <span class="muted" style="font-weight:400">— choose one option</span></td></tr>`;
+    const body=c.options.map((o,i)=>{
+      const sess=o.sessions.length?o.sessions:[{}];
+      return sess.map((s,j)=>`<tr>${j===0?`<td rowspan="${sess.length}"><input type="radio" name="opt-${esc(c.key)}" data-choose="${esc(c.key)}" data-opt="${i}" ${S.choice[c.key]===i?'checked':''} aria-label="${esc(c.name)} ${optLabel(c,i)}"></td><td rowspan="${sess.length}">${optLabel(c,i)}</td>`:''}<td>${esc(s.day||'—')}</td><td>${s.start?disp(toMin(s.start))+'–'+disp(toMin(s.end)):'—'}</td><td>${esc(s.faculty||'')}</td><td>${esc(s.room||'')}</td><td>${esc(s.batch?'Batch '+s.batch:'')}</td></tr>`).join('');
+    }).join('');
+    return head+body;
+  }).join('');
+  return `<div class="card"><h3 style="font-size:22px;margin-bottom:4px">Available options</h3>
+    <p class="muted" style="margin-top:0">These courses run in more than one option. Nothing is chosen for you — pick one for each, or let the finder suggest combinations.</p>
+    <div class="scroll"><table class="opt-table"><thead><tr><th></th><th>Option</th><th>Day</th><th>Time</th><th>Faculty</th><th>Room</th><th>Batch</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div style="margin-top:14px"><button class="btn" data-act="combos">Find combinations without clashes</button> <button class="btn" data-act="clearchoice">Clear my choices</button></div>
+    <div id="combos">${combosHtml()}</div></div>`;
+}
+function combosHtml(){
+  const r=S.combos; if(!r) return '';
+  const free=r.res.filter(x=>x.conf===0).length;
+  const head=`<p style="margin:12px 0 0"><b>${r.total}</b> possible combination${r.total===1?'':'s'}. ${r.exhaustive?`<b>${free}</b> ${free===1?'has':'have'} no clashes.`:`All of them were not checked; showing ${free?'clash-free ones found':'none without clashes'}.`}</p>`;
+  if(!r.res.length) return head+'<div class="notice">No clash-free combination was found.</div>';
+  const list=r.res.slice(0,30).map((x,n)=>`<div class="combo ${x.conf===0?'free':''}"><div class="row spread"><b>Combination ${n+1} — ${x.conf===0?'no clashes':'⚠ '+x.conf+' clash'+(x.conf===1?'':'es')}</b><button class="btn small" data-act="applycombo" data-i="${n}">Use this</button></div><ul>${r.multi.map((c,i)=>`<li>${esc(c.name)} → ${optLabel(c,x.picks[i])}${c.options[x.picks[i]].valid.length?' ('+c.options[x.picks[i]].valid.map(s=>s.day+' '+disp(s.s)+'–'+disp(s.e)).join(', ')+')':''}</li>`).join('')}</ul></div>`).join('');
+  return head+(r.res[0].conf>0?'<div class="notice">Every combination has at least one clash. Showing the ones with the fewest.</div>':'')+list+(r.res.length>30?`<p class="muted">Showing 30 of ${r.res.length}.</p>`:'');
+}
+function vResult(){
+  const active=activeSessions(), ghost=S.ghost?ghostSessions():[], conflicts=findConflicts(active);
+  const pending=S.courses.filter(c=>c.options.length>1&&S.choice[c.key]==null).length;
+  const byType={}; S.courses.forEach(c=>{const t=c.cat||'Other'; (byType[t]=byType[t]||[]).push(c);});
+  const typeOrder=['Major','Minor','Core'].concat(Object.keys(byType).filter(t=>!['Major','Minor','Core'].includes(t)));
+  const unscheduled=S.picked.filter(e=>!toSession(e)).length;
+  const sel=S.selLabel||[S.sel.major&&'Major: '+S.sel.major,S.sel.minor&&'Minor: '+S.sel.minor,S.sel.core&&'Core: '+S.sel.core].filter(Boolean).join(' · ')||'No selections';
+  const conflictHtml=conflicts.length?`<div class="notice bad" role="alert"><b>⚠ Schedule conflict${conflicts.length>1?'s':''}</b><ul style="margin:6px 0 0;padding-left:18px">${conflicts.map(c=>`<li>${esc(dispName(c.a))} (${esc(c.a.cat||'Other')}) and ${esc(dispName(c.b))} (${esc(c.b.cat||'Other')}) overlap on ${c.a.day} from ${disp(c.ov.s)}–${disp(c.ov.e)}.</li>`).join('')}</ul></div>`:'';
+  const list=active.slice().sort((a,b)=>DAY_NAMES.indexOf(a.day)-DAY_NAMES.indexOf(b.day)||a.s-b.s);
+  const listHtml=`<div class="scroll"><table><thead><tr><th>Course</th><th>Type</th><th>Day</th><th>Time</th><th>Faculty</th><th>Room</th></tr></thead><tbody>${list.map(s=>`<tr><td>${esc(dispName(s))}</td><td><span class="pill ${catClass(s.cat)}">${esc(s.cat||'Other')}</span></td><td>${s.day}</td><td>${disp(s.s)}–${disp(s.e)}</td><td>${esc(s.faculty||'')}</td><td>${esc(s.room||'')}</td></tr>`).join('')||'<tr><td colspan="6" class="muted">No classes chosen yet.</td></tr>'}</tbody></table></div>`;
+  return `<div class="row spread" style="margin-bottom:14px"><div><h2 style="font-size:30px">My Timetable</h2><div class="muted">${esc(sel)}</div></div>
+    <div class="row"><button class="btn" data-act="tosel">Change selections</button><button class="btn" data-act="toverify">Edit extracted data</button></div></div>
+  <div class="stats" style="margin-bottom:16px"><div class="stat"><b>${S.courses.length}</b>Total courses</div><div class="stat"><b>${active.length}</b>Weekly classes</div><div class="stat ${conflicts.length?'bad':''}"><b>${conflicts.length}</b>Conflicts</div><div class="stat"><b>${pending}</b>Courses awaiting an option</div></div>
+  ${!S.courses.length?'<div class="notice bad">No entries matched your selections. Go back and check the Type, Specialisation and Division values in the review step.</div>':''}
+  ${unscheduled?`<div class="notice">${unscheduled} matching entries have no valid day or time and cannot be placed. Fix them in the review step.</div>`:''}
+  ${optionsHtml()}
+  <div class="card"><div class="row spread"><div class="tabs" role="tablist"><button role="tab" class="${S.view==='schedule'?'on':''}" data-act="view" data-v="schedule">Schedule View</button><button role="tab" class="${S.view==='timetable'?'on':''}" data-act="view" data-v="timetable">Timetable View</button><button role="tab" class="${S.view==='list'?'on':''}" data-act="view" data-v="list">Course List View</button></div>
+    ${S.view==='schedule'?`<label>Lunch row starts at <input type="time" data-lunch value="${fmt(S.lunchAt)}"></label>`:''}${S.view==='timetable'&&S.courses.some(c=>c.options.length>1)?`<label><input type="checkbox" data-ghost ${S.ghost?'checked':''}> Show options I have not chosen (dashed)</label>`:''}</div>
+    ${conflictHtml}
+    ${S.view==='schedule'?`<div style="margin-top:14px">${scheduleHtml(active,conflicts)}</div>`:S.view==='timetable'?`<div class="legend"><span><span class="pill Major">Major</span> solid bar</span><span><span class="pill Minor">Minor</span> double bar</span><span><span class="pill Core">Core</span> dotted bar</span><span><span class="pill Other">Other</span> dashed bar</span></div><div style="margin-top:8px">${timetableHtml(active,ghost,conflicts)}</div>`:`<div style="margin-top:14px">${listHtml}</div>`}</div>
+  <div class="card"><h3 style="font-size:22px;margin-bottom:10px">Selected courses</h3><div class="sel-list">${typeOrder.filter(t=>byType[t]).map(t=>`<div><span class="pill ${catClass(t)}">${esc(t)}</span><ul>${byType[t].map(c=>`<li>${esc(c.name)}${c.options.length>1?` <span class="muted">(${c.options.length} options${S.choice[c.key]!=null?', '+optLabel(c,S.choice[c.key])+' chosen':''})</span>`:''}</li>`).join('')}</ul></div>`).join('')||'<span class="muted">None</span>'}</div></div>
+  <details style="margin-top:18px"><summary>How these courses were selected</summary><ul class="muted">
+    ${S.selLabel?`<li>Courses you ticked for ${esc(S.pick.division||'your class')} plus the electives you ticked, exactly as listed in the file.</li>`:`<li>Major: entries with Type = Major and Specialisation = “${esc(S.sel.major||'(none selected)')}”.</li><li>Minor: entries with Type = Minor and Specialisation = “${esc(S.sel.minor||'(none selected)')}”.</li><li>Core: entries with Type = Core and Division = “${esc(S.sel.core||'(none selected)')}”.</li>`}
+    <li>${S.picked.length} of ${S.entries.length} entries matched. Rows for the same course are ${S.mode==='sections'?'grouped into options by faculty / batch / division':'each treated as a separate option'}; a course with one option is fixed, and a course with several options is left for you to choose.</li></ul></details>`;
+}
+function afterResult(){}
+
+/* ---- events ---- */
+document.addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-act]'); if(!b) return;
+  const a=b.dataset.act;
+  if(a==='home'){go(S.entries.length&&S.step!=='landing'?S.step:'landing');}
+  else if(a==='start') go('upload');
+  else if(a==='pick'){const f=document.getElementById('file'); if(f&&ev.target!==f) f.click();}
+  else if(a==='usepaste'){const t=document.getElementById('paste').value; if(!t.trim()) return; S.fileInfo={name:'Pasted table',type:'Text',size:sizeStr(t.length)}; S.status={kind:'',text:'Reading your timetable…'}; render(); Extractors.paste(t).then(finishExtraction).catch(e=>{S.status={kind:'err',text:e.message||'Could not read the pasted table.'}; render();});}
+  else if(a==='toupload') go('upload');
+  else if(a==='toverify') go('verify');
+  else if(a==='tosel') go('select');
+  else if(a==='generate') generate();
+  else if(a==='reextract'){runExtract(); render();}
+  else if(a==='delrow'){S.entries=S.entries.filter(e=>e.id!==+b.dataset.id); S.selRows.delete(+b.dataset.id); refreshTable();}
+  else if(a==='addrow'){const e=Object.assign(blankEntry(),{id:S.nextId++}); S.entries.unshift(e); S.search=''; refreshTable(); const si=document.getElementById('search'); if(si) si.value='';}
+  else if(a==='selshown'){(S.shown||[]).forEach(id=>S.selRows.add(id)); refreshTable();}
+  else if(a==='selnone'){S.selRows.clear(); refreshTable();}
+  else if(a==='bulk'){
+    const f=document.getElementById('bulkf').value; let v=document.getElementById('bulkv').value.trim();
+    if(f==='category') v=normCat(v);
+    S.entries.forEach(e=>{if(S.selRows.has(e.id)) e[f]=v;}); refreshTable();
+  }
+  else if(a==='view'){S.view=b.dataset.v; render();}
+  else if(a==='clearchoice'){S.choice={}; render();}
+  else if(a==='combos'){S.combos=findCombos(S.courses); render();}
+  else if(a==='applycombo'){const x=S.combos.res[+b.dataset.i]; S.combos.multi.forEach((c,i)=>{S.choice[c.key]=x.picks[i];}); render();}
+});
+function refreshTable(){const tb=document.getElementById('tbody'); if(tb) tb.innerHTML=rowsHtml(); const s=document.getElementById('vsummary'); if(s) s.innerHTML=summaryHtml();}
+document.addEventListener('input',ev=>{
+  if(ev.target.id==='search'){S.search=ev.target.value; const tb=document.getElementById('tbody'); if(tb) tb.innerHTML=rowsHtml();}
+});
+document.addEventListener('change',ev=>{
+  const t=ev.target;
+  if(t.id==='file'&&t.files[0]) return handleFile(t.files[0]);
+  if(t.dataset.pickDiv!==undefined){S.pick.division=t.value; applyPickDefaults(); render(); return;}
+  if(t.dataset.pickOn){const st=pickState(t.dataset.pickOn,t.dataset.key); st.on=t.checked; return;}
+  if(t.dataset.pickType){pickState(t.dataset.pickType,t.dataset.key).type=t.value; return;}
+  if(t.dataset.lunch!==undefined){const v=toMin(t.value); if(v!=null){S.lunchAt=v; render();} return;}
+  if(t.dataset.f){ // editable entry cell
+    const e=S.entries.find(x=>x.id===+t.dataset.id); if(!e) return;
+    e[t.dataset.f]=t.dataset.f==='category'?normCat(t.value):t.value.trim();
+    const tr=t.closest('tr'); const [k,txt]=issueOf(e,hasCats()); tr.className=k==='bad'?'bad':''; tr.querySelector('.flag').textContent=txt;
+    if(t.dataset.f==='category') t.value=e.category;
+    document.getElementById('vsummary').innerHTML=summaryHtml(); return;
+  }
+  if(t.dataset.sel){const id=+t.dataset.sel; t.checked?S.selRows.add(id):S.selRows.delete(id); return;}
+  if(t.dataset.cfg){
+    const cfg=S.cfgs[S.activeSheet], src=S.sources.find(s=>s.name===S.activeSheet), k=t.dataset.cfg;
+    if(k==='sheet'){S.activeSheet=t.value;}
+    else if(k==='layout'){
+      if(t.value==='blocks'){const b=detectBlocks(src.grid); if(b) Object.assign(cfg,b,{layout:'blocks'}); else {cfg.layout='blocks'; cfg.dayRows=[]; cfg.hdrRows=[];}}
+      else if(t.value==='grid'){const g=detectGrid(src.grid); if(g) Object.assign(cfg,g,{layout:'grid'}); else {cfg.layout='grid'; cfg.dayCols=[]; cfg.timeCol=0; cfg.transposed=false;}}
+      else {cfg.layout='table'; const d=detectTable(src.grid); if(d){cfg.headerRow=d.headerRow; cfg.mapping=d.mapping;}}
+    }
+    else if(k==='headerRow') cfg.headerRow=Math.max(0,(+t.value||1)-1);
+    else if(k==='include') cfg.include=t.value==='1';
+    else if(k==='map'){const f=t.dataset.field; if(t.value==='') delete cfg.mapping[f]; else cfg.mapping[f]=+t.value; return;}
+    if(k==='headerRow'&&cfg.layout==='table'){const m={}; (src.grid[cfg.headerRow]||[]).forEach((c,i)=>{const f=matchHeader(c); if(f&&m[f]==null) m[f]=i;}); cfg.mapping=m;}
+    document.getElementById('mapping').innerHTML=mappingHtml(); return;
+  }
+  if(t.dataset.opt&&!t.dataset.choose){
+    if(t.dataset.opt==='fillDown') S.opts.fillDown=t.checked; else S.opts[t.dataset.opt]=t.value; return;
+  }
+  if(t.dataset.selKey){S.sel[t.dataset.selKey]=t.value; return;}
+  if(t.dataset.selOther){S.sel.other[t.dataset.selOther]=t.value; return;}
+  if(t.id==='s-mode'){S.mode=t.value; return;}
+  if(t.dataset.choose!==undefined){S.choice[t.dataset.choose]=+t.dataset.opt; render(); return;}
+  if(t.hasAttribute&&t.hasAttribute('data-ghost')){S.ghost=t.checked; render(); return;}
+});
+/* drag and drop */
+document.addEventListener('dragover',ev=>{const d=ev.target.closest&&ev.target.closest('#drop'); if(d){ev.preventDefault(); d.classList.add('over');}});
+document.addEventListener('dragleave',ev=>{const d=ev.target.closest&&ev.target.closest('#drop'); if(d) d.classList.remove('over');});
+document.addEventListener('drop',ev=>{const d=ev.target.closest&&ev.target.closest('#drop'); if(d){ev.preventDefault(); d.classList.remove('over'); if(ev.dataTransfer.files[0]) handleFile(ev.dataTransfer.files[0]);}});
+document.addEventListener('keydown',ev=>{if((ev.key==='Enter'||ev.key===' ')&&ev.target.id==='drop'){ev.preventDefault(); const f=document.getElementById('file'); if(f) f.click();}});
+
+render();
+</script>
+</body>
+</html>
